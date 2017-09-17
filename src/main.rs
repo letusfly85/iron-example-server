@@ -9,6 +9,7 @@ extern crate serde_json;
 
 use iron::status;
 use iron::prelude::*;
+use iron::middleware::*;
 use router::Router;
 
 
@@ -52,10 +53,22 @@ fn handler(req: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, *query)))
 }
 
+struct AppBeforeMiddleware;
+
+impl BeforeMiddleware for AppBeforeMiddleware {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        println!("before handline request");
+        Ok(())
+    }
+}
+
 fn main() {
     let mut router = Router::new();
     router.get("/", handler, "index");
     router.get("/log", log_body, "log");
 
-    Iron::new(router).http("localhost:3000").unwrap();
+    let mut chain = Chain::new(router);
+    chain.link_before(AppBeforeMiddleware);
+
+    Iron::new(chain).http("localhost:3000").unwrap();
 }
