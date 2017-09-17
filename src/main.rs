@@ -1,14 +1,12 @@
 extern crate iron;
 extern crate router;
 extern crate bodyparser;
-extern crate persistent;
 #[macro_use]
 extern crate serde_derive;
 
 extern crate serde;
 extern crate serde_json;
 
-use persistent::Read;
 use iron::status;
 use iron::prelude::*;
 use router::Router;
@@ -45,20 +43,19 @@ fn log_body(req: &mut Request) -> IronResult<Response> {
     Ok(Response::with(status::Ok))
 }
 
-const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
+fn handler(req: &mut Request) -> IronResult<Response> {
+    let ref query = req.extensions
+        .get::<Router>()
+        .unwrap()
+        .find("query")
+        .unwrap_or("/");
+    Ok(Response::with((status::Ok, *query)))
+}
 
 fn main() {
     let mut router = Router::new();
     router.get("/", handler, "index");
+    router.get("/log", log_body, "log");
 
-    let mut chain = Chain::new(log_body);
-    chain.link_before(Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
-    //Iron::new(chain).http("localhost:3000").unwrap();
     Iron::new(router).http("localhost:3000").unwrap();
-
-    fn handler(req: &mut Request) -> IronResult<Response> {
-        let ref query = req.extensions.get::<Router>().unwrap().find("query").unwrap_or("/");
-        println!("return ok");
-        Ok(Response::with((status::Ok, *query)))
-    }
 }
