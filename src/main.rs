@@ -12,6 +12,12 @@ use iron::prelude::*;
 use iron::middleware::*;
 use router::Router;
 
+extern crate iron_example_server;
+extern crate diesel;
+use iron_example_server::*;
+use self::models::*;
+use diesel::prelude::*;
+
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct MyStructure {
@@ -63,6 +69,20 @@ impl BeforeMiddleware for AppBeforeMiddleware {
 }
 
 fn main() {
+    use self::schema::employee::dsl::*;
+
+    let connection = establish_connection();
+    let results = employee
+        .filter(department_id.eq(0))
+        .limit(5)
+        .load::<Employee>(&connection)
+        .expect("Error loading employee");
+
+    println!("Displaying {:?} employees", results.len());
+    for emp in results {
+        println!("{}", emp.id);
+    }
+
     let mut router = Router::new();
     router.get("/", handler, "index");
     router.get("/log", log_body, "log");
