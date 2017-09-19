@@ -15,7 +15,7 @@ use router::Router;
 extern crate iron_example_server;
 extern crate diesel;
 use iron_example_server::*;
-use self::models::*;
+use iron_example_server::models::employee::*;
 use diesel::prelude::*;
 
 
@@ -68,6 +68,11 @@ impl BeforeMiddleware for AppBeforeMiddleware {
     }
 }
 
+//TODO implement
+fn get_employee(req: &mut Request) -> IronResult<Response> {
+    Ok(Response::with(status::Ok))
+}
+
 fn main() {
     use self::schema::employee::dsl::*;
 
@@ -86,6 +91,7 @@ fn main() {
     let mut router = Router::new();
     router.get("/", handler, "index");
     router.get("/log", log_body, "log");
+    router.get("/employee", get_employee, "employee");
 
     let mut chain = Chain::new(router);
     chain.link_before(AppBeforeMiddleware);
