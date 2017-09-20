@@ -68,33 +68,46 @@ impl BeforeMiddleware for AppBeforeMiddleware {
     }
 }
 
-//TODO implement
-fn get_employee(req: &mut Request) -> IronResult<Response> {
-    Ok(Response::with(status::Ok))
-}
+fn find_employee(req: &mut Request) -> IronResult<Response> {
+    //TODO validate query parameter
+    let employee_id: i32 = req.extensions
+        .get::<Router>()
+        .unwrap()
+        .find("id")
+        .unwrap()
+        .parse()
+        .unwrap();
 
-fn main() {
     use self::schema::employee::dsl::*;
 
+    //TODO remove connection from method, use something like connection pool
     let connection = establish_connection();
     let results = employee
-        .filter(department_id.eq(0))
+        .filter(id.eq(employee_id))
         .limit(5)
         .load::<Employee>(&connection)
         .expect("Error loading employee");
 
-    println!("Displaying {:?} employees", results.len());
     for emp in results {
         println!("{}", emp.id);
+        println!("{}", emp.name);
+        println!("{}", emp.department_id);
     }
+
+    //TODO contruct structure of json response
+    Ok(Response::with(status::Ok))
+}
+
+fn main() {
+
 
     let mut router = Router::new();
     router.get("/", handler, "index");
     router.get("/log", log_body, "log");
-    router.get("/employee", get_employee, "employee");
+    router.get("/employees/:id", find_employee, "id");
 
     let mut chain = Chain::new(router);
     chain.link_before(AppBeforeMiddleware);
 
-    Iron::new(chain).http("localhost:3000").unwrap();
+    Iron::new(chain).http("localhost:3001").unwrap();
 }
