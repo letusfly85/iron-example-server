@@ -5,6 +5,8 @@ extern crate bodyparser;
 extern crate serde_derive;
 
 extern crate serde;
+
+#[macro_use]
 extern crate serde_json;
 
 use iron::status;
@@ -88,14 +90,22 @@ fn find_employee(req: &mut Request) -> IronResult<Response> {
         .load::<Employee>(&connection)
         .expect("Error loading employee");
 
+    let mut return_emp = json!({});
     for emp in results {
         println!("{}", emp.id);
         println!("{}", emp.name);
         println!("{}", emp.department_id);
+
+        return_emp = json!({
+            "id": emp.id,
+            "name": emp.id,
+            "department_id": emp.department_id
+        });
+        println!("{}", return_emp);
     }
 
     //TODO contruct structure of json response
-    Ok(Response::with(status::Ok))
+    Ok(Response::with((status::Ok, return_emp.to_string())))
 }
 
 fn main() {
