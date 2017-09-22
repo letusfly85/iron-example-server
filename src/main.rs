@@ -18,6 +18,7 @@ extern crate iron_example_server;
 extern crate diesel;
 use iron_example_server::*;
 use iron_example_server::models::employee::*;
+use iron_example_server::middlewares::connection_pool::*;
 use diesel::prelude::*;
 
 
@@ -82,12 +83,11 @@ fn find_employee(req: &mut Request) -> IronResult<Response> {
 
     use self::schema::employee::dsl::*;
 
-    //TODO remove connection from method, use something like connection pool
-    let connection = establish_connection();
+    let connection = req.get_db_conn();
     let results = employee
         .filter(id.eq(employee_id))
         .limit(5)
-        .load::<Employee>(&connection)
+        .load::<Employee>(&*connection)
         .expect("Error loading employee");
 
     let mut return_emp = json!({});
@@ -104,7 +104,6 @@ fn find_employee(req: &mut Request) -> IronResult<Response> {
         println!("{}", return_emp);
     }
 
-    //TODO contruct structure of json response
     Ok(Response::with((status::Ok, return_emp.to_string())))
 }
 
@@ -118,6 +117,7 @@ fn main() {
 
     let mut chain = Chain::new(router);
     chain.link_before(AppBeforeMiddleware);
+    chain.link_before(DieselMiddleware::new());
 
     Iron::new(chain).http("localhost:3001").unwrap();
 }

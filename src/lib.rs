@@ -8,9 +8,16 @@ extern crate dotenv;
 pub mod models;
 pub mod schema;
 
+extern crate r2d2;
+extern crate r2d2_diesel;
+
+pub mod middlewares;
+
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
+
+extern crate iron;
 
 pub fn establish_connection() -> MysqlConnection {
     dotenv().ok();

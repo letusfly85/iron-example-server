@@ -2,6 +2,12 @@
 
 ## Migration
 
+### setup url
+
+```bash
+echo DATABASE_URL=mysql://root@0.0.0.0/iron > .env
+```
+
 ### install diesel_cli
 
 ```bash
