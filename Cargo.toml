@@ -14,6 +14,10 @@ diesel_codegen = { version = "0.16.0", features = ["mysql"] }
 r2d2 = "0.7.0"
 r2d2-diesel = "0.16.0"
 dotenv = "0.8.0"
+jsonwebtoken = "3"
+slog = "~2.0.12"
+slog-term = "~2.2.0"
+slog-json = "~2.0.0"
 
 [dependencies.iron]
 version = "*"
